@@ -161,10 +161,7 @@ class FacetWP_Facet_P2P {
 		$output = '';
 		$facet = $params['facet'];
 		$selected_values = (array) $params['selected_values'];
-
-		//@TODO: maybe should need to do the same for the posts
-		//$values = FWP()->helper->sort_taxonomy_values( $params['values'], $facet['orderby'] );
-		$values = $params['values'];
+		$values = $this->sort_hierarchical_values( $params['values'], $facet['orderby'] );
 
 		$last_depth = 0;
 		foreach ( $values as $result ) {
@@ -484,5 +481,35 @@ class FacetWP_Facet_P2P {
 		}
 
 		return $boolean;
+	}
+
+	/**
+	 * Sort hierarchical items
+	 * @see FacetWP_Helper::sort_taxonomy_values for the original method
+	 *
+	 * @params array $value unsorted items
+	 *
+	 * @return array
+	 */
+	function sort_hierarchical_values( $values = array() ) {
+
+		// Create an "order" sort value based on the top-level items
+		$cache = array();
+		foreach ( $values as $key => $val ) {
+			if ( 0 === absint( $val['depth'] ) ) {
+				$cache[ $val['facet_value'] ] = $key;
+				$values[ $key ]['order'] = $key;
+			} else {
+				$new_order = $cache[ $val['parent_id'] ] . ".$key"; // dot-separated hierarchy string
+				$cache[ $val['facet_value'] ] = $new_order;
+				$values[ $key ]['order'] = $new_order;
+			}
+		}
+
+		// Sort the array based on the new "order" element
+		// Since this is a dot-separated hierarchy string, treat it like version_compare
+		usort( $values, array( FWP()->helper, 'compare_order' ) );
+
+		return $values;
 	}
 }
