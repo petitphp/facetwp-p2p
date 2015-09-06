@@ -444,6 +444,16 @@ class FacetWP_Facet_P2P {
 					FWP.facets[facet_name] = selected_values;
 				});
 
+				wp.hooks.addFilter('facetwp/selections/p2p', function(output, params) {
+					var labels = [];
+					$.each(params.selected_values, function(idx, val) {
+						var label = params.el.find('.facetwp-p2p[data-value="' + val + '"]').clone();
+						label.find('.facetwp-counter').remove();
+						labels.push(label.text());
+					});
+					return labels.join(' / ');
+				});
+
 				wp.hooks.addAction('facetwp/ready', function () {
 					$(document).on('click', '.facetwp-facet .facetwp-p2p:not(.disabled)', function () {
 						$(this).toggleClass('checked');
