@@ -4,14 +4,15 @@
 }
 
 .facetwp-p2p {
-    background: url(../images/checkbox.png) no-repeat;
+    background: url(../images/checkbox.png) 0 50% no-repeat;
+    background-size: 14px 14px;
     margin-bottom: 4px;
     padding-left: 20px;
     cursor: pointer;
 }
 
 .facetwp-p2p.checked {
-    background: url(../images/checkbox-on.png) no-repeat;
+    background-image: url(../images/checkbox-on.png);
 }
 
 .facetwp-p2p.disabled {
