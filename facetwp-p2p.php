@@ -1,11 +1,12 @@
 <?php
 /*
 Plugin Name: FacetWP - Posts 2 Posts
-Plugin URI: https://github.com/petitphp/facetwp-p2p
+Plugin URI:  https://github.com/petitphp/facetwp-p2p
 Description: Add a P2P connexion facet for the plugin FacetWP
-Version: 1.0
-Author: PetitPHP
-Author URI: https://github.com/petitphp
+Version:     1.0
+Author:      PetitPHP
+Author URI:  https://github.com/petitphp
+License:     GPL2+
 */
 
 // don't load directly

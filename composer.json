@@ -2,7 +2,7 @@
     "name": "petitphp/facetwp-p2p",
     "description": "Add filtering by P2P connexions for FacetWP",
     "type": "wordpress-plugin",
-    "license": "GPL-2.0+",
+    "license": "GPL2+",
     "keywords": ["WordPress", "FacetWP", "p2p", "posts-to-posts"],
     "authors": [
         {
