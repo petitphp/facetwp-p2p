@@ -5,6 +5,8 @@ class FacetWP_Facet_P2P {
 		$this->label = __( 'Posts to Posts', 'fwp' );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 50 );
+
+		add_filter( 'facetwp_store_unfiltered_post_ids', array( $this, 'store_unfiltered_post_ids' ) );
 	}
 
 	/**
@@ -317,5 +319,18 @@ class FacetWP_Facet_P2P {
 			})(jQuery);
 		</script>
 	<?php
+	}
+
+	/**
+	 * Store unfiltered post IDs if a p2p facet exists with ghosts mode enabled
+	 *
+	 * @return bool
+	 */
+	function store_unfiltered_post_ids( $boolean ) {
+		if ( FWP()->helper->facet_setting_exists( 'ghosts', 'yes' ) ) {
+			return true;
+		}
+
+		return $boolean;
 	}
 }
