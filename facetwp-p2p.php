@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-define( 'FWP_P2P_VER', '1.0.0' );
+define( 'FWP_P2P_VER', '1.2.0' );
 define( 'FWP_P2P_URL', plugin_dir_url( __FILE__ ) );
 define( 'FWP_P2P_DIR', plugin_dir_path( __FILE__ ) );
 
