@@ -85,13 +85,13 @@ class FWP_P2P {
 			'suppress_filters' => false,
 		) );
 
-		//Index each connected posts
-		foreach ( $connected as $p ) {
-			$new_params = wp_parse_args( array(
-				'facet_value'         => $p->ID,
-				'facet_display_value' => $p->post_title,
-			), $params );
-			FWP()->indexer->insert( $new_params );
+		$rows = $this->get_rows_to_index( $connected, $params, true );
+		if ( empty( $rows ) ) {
+			return true;
+		}
+
+		foreach ( $rows as $row ) {
+			FWP()->indexer->insert( $row );
 		}
 
 		//Tell FacetWP to skip this facet and move to the next one.
@@ -161,6 +161,62 @@ class FWP_P2P {
 		$facet_types['p2p'] = new FacetWP_Facet_P2P();
 
 		return $facet_types;
+	}
+
+	/**
+	 *
+	 *
+	 * @param WP_Post[] $items
+	 * @param array     $default_params
+	 * @param bool      $is_hierarchical
+	 *
+	 * @return array
+	 */
+	protected function get_rows_to_index( $items, $default_params, $is_hierarchical = false ) {
+		if ( ! is_array( $items ) ) {
+			$items = array( $items );
+		}
+
+		$rows = array();
+
+		if ( empty( $items ) ) {
+			return $rows;
+		}
+
+		//Index each connected posts
+		foreach ( $items as $item ) {
+			$new_row = wp_parse_args( array(
+				'facet_value'         => $item->ID,
+				'facet_display_value' => $item->post_title,
+			), $default_params );
+
+			if ( $item->post_parent > 0 && is_post_type_hierarchical( $item->post_type ) && $is_hierarchical ) {
+				$ancestors_ids = get_post_ancestors( $item );
+				if ( ! empty( $ancestors_ids ) ) {
+					$ancestors = array_map( 'get_post', $ancestors_ids );
+					$ancestors_depth = count( $ancestors );
+					$new_row['parent_id'] = $item->post_parent;
+					$new_row['depth'] = $ancestors_depth;
+
+					foreach ( $ancestors as $ancestor ) {
+						$ancestors_depth--;
+						$new_ancestor = wp_parse_args( array(
+							'facet_value'         => $ancestor->ID,
+							'facet_display_value' => $ancestor->post_title,
+						), $default_params );
+						if ( 0 >= $ancestor->post_parent ) {
+							$new_ancestor['parent_id'] = $new_ancestor->post_parent;
+							$new_ancestor['depth'] = $ancestors_depth;
+						}
+						$rows[] = $new_ancestor;
+					}
+				}
+			}
+
+			$rows[] = $new_row;
+		}
+
+		return $rows;
 	}
 
 	/**
