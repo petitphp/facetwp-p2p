@@ -196,12 +196,17 @@ class FacetWP_Facet_P2P {
 
 			//execute when a user select the type P2P for a facet
 			wp.hooks.addAction('facetwp/change/p2p', function($this) {
+				var $facet = $this.closest('.facetwp-row');
+				if(0 >= $facet.length) {
+					$facet = $this.closest('.facetwp-facet');
+				}
+
 				//hide the default source
-				$this.closest('.facetwp-facet').find('.name-source').hide();
+				$facet.find('.name-source').hide();
 
 				//get the first connexion
-				var connexion = $this.closest('.facetwp-facet').find('.facet-source-p2p').val().substr(4),
-					$connection_side = $this.closest('.facetwp-facet').find('.type-p2p .facet-connexion-side');
+				var connexion = $facet.find('.facet-source-p2p').val().substr(4),
+					$connection_side = $facet.find('.type-p2p .facet-connexion-side');
 
 				_update_connexion_side(connexion, $connection_side);
 			});
