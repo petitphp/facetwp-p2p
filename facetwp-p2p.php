@@ -210,7 +210,7 @@ class FWP_P2P {
 							'facet_display_value' => $ancestor->post_title,
 						), $default_params );
 						if ( 0 >= $ancestor->post_parent ) {
-							$new_ancestor['parent_id'] = $new_ancestor->post_parent;
+							$new_ancestor['parent_id'] = $ancestor->post_parent;
 							$new_ancestor['depth'] = $ancestors_depth;
 						}
 						$rows[] = $new_ancestor;
