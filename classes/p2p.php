@@ -160,6 +160,21 @@ class FacetWP_Facet_P2P {
 			</select>
 		</td>
 	</tr>
+	<tr class="facetwp-conditional type-p2p">
+		<td>
+			<?php _e('Hierarchical', 'fwp'); ?>:
+			<div class="facetwp-tooltip">
+				<span class="icon-question">?</span>
+				<div class="facetwp-tooltip-content"><?php _e( 'Display as hierarchical in front. Will only work with hierarchical post type.', 'fwp' ); ?></div>
+			</div>
+		</td>
+		<td>
+			<select class="facet-hierarchical">
+				<option value="no"><?php _e( 'No', 'fwp' ); ?></option>
+				<option value="yes"><?php _e( 'Yes', 'fwp' ); ?></option>
+			</select>
+		</td>
+	</tr>
 	<?php
 	}
 
@@ -173,6 +188,7 @@ class FacetWP_Facet_P2P {
 			//execute when FacetWP load the settings
 			wp.hooks.addAction('facetwp/load/p2p', function($this, obj) {
 				$this.find('.type-p2p .facet-source-p2p').val(obj.source);
+				$this.find('.type-p2p .facet-hierarchical').val(obj.hierarchical);
 
 				//if we have a P2P connexion
 				if(!_.isUndefined(obj.source) && !_.isUndefined(obj.connexion_side)) {
@@ -189,8 +205,9 @@ class FacetWP_Facet_P2P {
 
 			//execute when FacetWP save the settings
 			wp.hooks.addFilter('facetwp/save/p2p', function($this, obj) {
-				obj['source'] = $this.find('.type-p2p .facet-source-p2p').val();
+				obj['source']         = $this.find('.type-p2p .facet-source-p2p').val();
 				obj['connexion_side'] = $this.find('.type-p2p .facet-connexion-side').val();
+				obj['hierarchical']   = $this.find('.type-p2p .facet-hierarchical').val();
 				return obj;
 			});
 
