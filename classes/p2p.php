@@ -47,9 +47,11 @@ class FacetWP_Facet_P2P {
 	 * Load the available choices
 	 */
 	function load_values( $params ) {
+		/* @var wpdb $wpdb */
 		global $wpdb;
 
 		$facet        = $params['facet'];
+		$from_clause  = $wpdb->prefix . 'facetwp_index f';
 
 		// Where
 		$where_clause = $params['where_clause'];
@@ -63,14 +65,62 @@ class FacetWP_Facet_P2P {
 		$limit = 10;
 
 		$sql = "
-        SELECT f.facet_value, f.facet_display_value, COUNT(*) AS counter
-        FROM {$wpdb->prefix}facetwp_index f
+        SELECT f.facet_value, f.facet_display_value, f.parent_id, f.depth, COUNT(*) AS counter
+        FROM {$from_clause}
         WHERE f.facet_name = '{$facet['name']}' $where_clause
         GROUP BY f.facet_value
         ORDER BY $orderby
         LIMIT $limit";
 
-		return $wpdb->get_results( $sql );
+		$output = $wpdb->get_results( $sql, ARRAY_A );
+
+		// Show "ghost" facet choices (those that return zero results)
+		if ( 'yes' === $facet['ghosts'] && ! empty( FWP()->unfiltered_post_ids ) ) {
+			$raw_post_ids = implode( ',', FWP()->unfiltered_post_ids );
+
+			$sql = "
+            SELECT f.facet_value, f.facet_display_value, f.parent_id, f.depth, 0 AS counter
+            FROM {$from_clause}
+            WHERE f.facet_name = '{$facet['name']}' AND post_id IN ($raw_post_ids)
+            GROUP BY f.facet_value
+            ORDER BY $orderby
+            LIMIT $limit";
+
+			$ghost_output = $wpdb->get_results( $sql, ARRAY_A );
+
+			// Keep the facet placement intact
+			if ( isset( $facet['preserve_ghosts'] ) && 'yes' === $facet['preserve_ghosts'] ) {
+				$tmp = array();
+				foreach ( $ghost_output as $row ) {
+					$tmp[ $row['facet_value'] . ' ' ] = $row;
+				}
+
+				foreach ( $output as $row ) {
+					$tmp[ $row['facet_value'] . ' ' ] = $row;
+				}
+
+				$output = $tmp;
+			} else {
+				// Make the array key equal to the facet_value (for easy lookup)
+				$tmp = array();
+				foreach ( $output as $row ) {
+					$tmp[ $row['facet_value'] . ' ' ] = $row; // Force a string array key
+				}
+				$output = $tmp;
+
+				foreach ( $ghost_output as $row ) {
+					$facet_value = $row['facet_value'];
+					if ( ! isset( $output[ "$facet_value " ] ) ) {
+						$output[ "$facet_value " ] = $row;
+					}
+				}
+			}
+
+			$output = array_splice( $output, 0, $limit );
+			$output = array_values( $output );
+		}
+
+		return $output;
 	}
 
 	/**
