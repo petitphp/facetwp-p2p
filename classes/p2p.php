@@ -161,7 +161,7 @@ class FacetWP_Facet_P2P {
 		$output = '';
 		$facet = $params['facet'];
 		$selected_values = (array) $params['selected_values'];
-		$values = $this->sort_hierarchical_values( $params['values'], $facet['orderby'] );
+		$values = $this->sort_hierarchical_values( $params['values'] );
 
 		$last_depth = 0;
 		foreach ( $values as $result ) {
