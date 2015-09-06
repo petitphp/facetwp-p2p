@@ -182,7 +182,17 @@ class FacetWP_Facet_P2P {
 			if ( $depth > 0 ) {
 				$classes = array_merge( $classes, array( 'has-parent', "lvl-{$depth}" ) );
 			}
-			$classes = apply_filters( 'facetwp_facet_p2p_css_class', $classes, $result );
+
+			/**
+			 * Filter classes for a facet. Classes will be sanitized.
+			 *
+			 * @param array $classes list of classes for the facet
+			 * @param array $result  current facet data
+			 * @param array $values  list of facets to be render
+			 */
+			$classes = apply_filters( 'facetwp_facet_p2p_css_class', $classes, $result, $values );
+
+			//Sanitize classes and remove empty values
 			$classes = array_filter( array_map( 'sanitize_html_class', $classes ) );
 
 			$output .= '<div class="' . implode( ' ', $classes ) . '" data-value="' . $result['facet_value'] . '">';
