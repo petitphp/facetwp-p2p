@@ -487,7 +487,7 @@ class FacetWP_Facet_P2P {
 	 * Sort hierarchical items
 	 * @see FacetWP_Helper::sort_taxonomy_values for the original method
 	 *
-	 * @params array $value unsorted items
+	 * @param array $values unsorted items
 	 *
 	 * @return array
 	 */
