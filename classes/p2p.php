@@ -134,15 +134,61 @@ class FacetWP_Facet_P2P {
 
 		$facet = $params['facet'];
 
-		$output          = '';
-		$values          = (array) $params['values'];
+		if ( isset( $facet['hierarchical'] ) && 'yes' === $facet['hierarchical'] ) {
+			return $this->render_hierarchy( $params );
+		}
+
+		$output = '';
+		$values = (array) $params['values'];
 		$selected_values = (array) $params['selected_values'];
 
 		foreach ( $values as $result ) {
-			$selected  = in_array( $result->facet_value, $selected_values ) ? ' checked' : '';
-			$selected .= ( 0 === absint( $result->counter ) ) ? ' disabled' : '';
-			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result->facet_value . '">';
-			$output .= $result->facet_display_value . ' <span class="facetwp-counter">(' . $result->counter . ')</span>';
+			$selected = in_array( $result['facet_value'], $selected_values ) ? ' checked' : '';
+			$selected .= ( 0 === absint( $result['counter'] ) ) ? ' disabled' : '';
+			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result['facet_value'] . '">';
+			$output .= $result['facet_display_value'] . ' <span class="facetwp-counter">(' . $result['counter'] . ')</span>';
+			$output .= '</div>';
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Generate the facet HTML (hierarchical)
+	 */
+	function render_hierarchy( $params ) {
+
+		$output = '';
+		$facet = $params['facet'];
+		$selected_values = (array) $params['selected_values'];
+
+		//@TODO: maybe should need to do the same for the posts
+		//$values = FWP()->helper->sort_taxonomy_values( $params['values'], $facet['orderby'] );
+		$values = $params['values'];
+
+		$last_depth = 0;
+		foreach ( $values as $result ) {
+			$depth = (int) $result['depth'];
+
+			if ( $depth > $last_depth ) {
+				$output .= '<div class="facetwp-depth">';
+			}
+			elseif ( $depth < $last_depth ) {
+				for ( $i = $last_depth; $i > $depth; $i-- ) {
+					$output .= '</div>';
+				}
+			}
+
+			$selected = in_array( $result['facet_value'], $selected_values ) ? ' checked' : '';
+			$selected .= ( 0 === absint( $result['counter'] ) ) ? ' disabled' : '';
+			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result['facet_value'] . '">';
+			$output .= $result['facet_display_value'] . ' <span class="facetwp-counter">(' . $result['counter'] . ')</span>';
+			$output .= '</div>';
+
+			$last_depth = $depth;
+		}
+
+		for ( $i = $last_depth; $i > 0; $i-- ) {
 			$output .= '</div>';
 		}
 
