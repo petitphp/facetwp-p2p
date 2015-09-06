@@ -1,0 +1,18 @@
+{
+    "name": "petitphp/facetwp-p2p",
+    "description": "Add filtering by P2P connexions for FacetWP",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0+",
+    "keywords": ["WordPress", "FacetWP", "p2p", "posts-to-posts"],
+    "authors": [
+        {
+            "name": "Clément Boirie",
+            "homepage": "https://github.com/petitphp",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/petitphp/facetwp-p2p",
+        "issues": "https://github.com/petitphp/facetwp-p2p/issues"
+    }
+}
