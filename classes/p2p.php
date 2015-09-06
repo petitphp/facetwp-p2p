@@ -172,8 +172,7 @@ class FacetWP_Facet_P2P {
 
 			if ( $depth > $last_depth ) {
 				$output .= '<div class="facetwp-depth">';
-			}
-			elseif ( $depth < $last_depth ) {
+			} elseif ( $depth < $last_depth ) {
 				for ( $i = $last_depth; $i > $depth; $i-- ) {
 					$output .= '</div>';
 				}
@@ -181,7 +180,15 @@ class FacetWP_Facet_P2P {
 
 			$selected = in_array( $result['facet_value'], $selected_values ) ? ' checked' : '';
 			$selected .= ( 0 === absint( $result['counter'] ) ) ? ' disabled' : '';
-			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result['facet_value'] . '">';
+
+			$classes = array( 'facetwp-p2p', $selected );
+			if ( $depth > 0 ) {
+				$classes = array_merge( $classes, array( 'has-parent', "lvl-{$depth}" ) );
+			}
+			$classes = apply_filters( 'facetwp_facet_css_class', $classes, $result );
+			$classes = array_filter( array_map( 'sanitize_html_class', $classes ) );
+
+			$output .= '<div class="' . implode( ' ', $classes ) . '" data-value="' . $result['facet_value'] . '">';
 			$output .= $result['facet_display_value'] . ' <span class="facetwp-counter">(' . $result['counter'] . ')</span>';
 			$output .= '</div>';
 
