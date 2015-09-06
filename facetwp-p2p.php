@@ -3,14 +3,14 @@
 Plugin Name: FacetWP - Posts 2 Posts
 Plugin URI:  https://github.com/petitphp/facetwp-p2p
 Description: Add a P2P connexion facet for the plugin FacetWP
-Version:     1.0
+Version:     1.1.0
 Author:      PetitPHP
 Author URI:  https://github.com/petitphp
 License:     GPL2+
 */
 
 // don't load directly
-if ( !defined( 'ABSPATH' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
@@ -21,7 +21,7 @@ define( 'FWP_P2P_DIR', plugin_dir_path( __FILE__ ) );
 class FWP_P2P {
 
 	function __construct() {
-		add_action( 'init' , array( $this, 'init' ) );
+		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_css' ) );
 	}
 
@@ -61,7 +61,7 @@ class FWP_P2P {
 		$facet = $default['facet'];
 
 		//Don't index facets other than P2P
-		if( 'p2p' !== $facet['type'] ) {
+		if ( 'p2p' !== $facet['type'] ) {
 			return false;
 		}
 
@@ -70,7 +70,7 @@ class FWP_P2P {
 
 		//Only index P2P connexion if the current post's post_type
 		//match the one choose by the user when creating the facet.
-		if( $post_ptype !== $facet['connexion_side'] ) {
+		if ( $post_ptype !== $facet['connexion_side'] ) {
 			return true;
 		}
 
@@ -79,16 +79,16 @@ class FWP_P2P {
 
 		//Get all connected posts for this connection
 		$connected = get_posts( array(
-			'connected_type' => $connexion,
-			'connected_items' => $params['post_id'],
-			'nopaging' => true,
-			'suppress_filters' => false
+			'connected_type'   => $connexion,
+			'connected_items'  => $params['post_id'],
+			'nopaging'         => true,
+			'suppress_filters' => false,
 		) );
 
 		//Index each connected posts
-		foreach( $connected as $p ) {
+		foreach ( $connected as $p ) {
 			$new_params = wp_parse_args( array(
-				'facet_value' => $p->ID,
+				'facet_value'         => $p->ID,
 				'facet_display_value' => $p->post_title,
 			), $params );
 			FWP()->indexer->insert( $new_params );
@@ -107,13 +107,13 @@ class FWP_P2P {
 	 */
 	function p2p_created_connection( $p2p_id ) {
 		$connexion = p2p_get_connection( $p2p_id );
-		$facet = $this->get_facet_by_p2p_connexion_name( $connexion->p2p_type );
-		if( !$facet ) {
+		$facet     = $this->get_facet_by_p2p_connexion_name( $connexion->p2p_type );
+		if ( ! $facet ) {
 			return false;
 		}
 
 		$from_ptype = get_post_type( $connexion->p2p_from );
-		if( $facet['connexion_side'] === $from_ptype ) {
+		if ( $facet['connexion_side'] === $from_ptype ) {
 			FWP()->indexer->index( $connexion->p2p_from );
 		} else {
 			FWP()->indexer->index( $connexion->p2p_to );
@@ -131,9 +131,21 @@ class FWP_P2P {
 		/* @var wpdb $wpdb */
 		global $wpdb;
 
-		foreach( $p2p_ids as $p2p_id ) {
+		foreach ( $p2p_ids as $p2p_id ) {
 			$connexion = p2p_get_connection( $p2p_id );
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}facetwp_index WHERE post_id IN (%d, %d) AND facet_value IN (%d, %d)  AND facet_source = %s", $connexion->p2p_from, $connexion->p2p_to, $connexion->p2p_from, $connexion->p2p_to, 'p2p/' . $connexion-> p2p_type ) );
+			$wpdb->query( $wpdb->prepare(
+				"
+				DELETE FROM {$wpdb->prefix}facetwp_index
+				WHERE post_id IN (%d, %d)
+				AND facet_value IN (%d, %d)
+				AND facet_source = %s
+				",
+				$connexion->p2p_from,
+				$connexion->p2p_to,
+				$connexion->p2p_from,
+				$connexion->p2p_to,
+				'p2p/' . $connexion->p2p_type
+			) );
 		}
 	}
 
@@ -147,6 +159,7 @@ class FWP_P2P {
 	function register_facet_type( $facet_types ) {
 		include( dirname( __FILE__ ) . '/classes/p2p.php' );
 		$facet_types['p2p'] = new FacetWP_Facet_P2P();
+
 		return $facet_types;
 	}
 
@@ -159,8 +172,8 @@ class FWP_P2P {
 	 */
 	protected function get_facet_by_p2p_connexion_name( $connexion ) {
 		$facets = FWP()->helper->get_facets();
-		foreach( $facets as $facet ) {
-			if( 'p2p/' . $connexion === $facet['source'] ) {
+		foreach ( $facets as $facet ) {
+			if ( 'p2p/' . $connexion === $facet['source'] ) {
 				return $facet;
 			}
 		}
