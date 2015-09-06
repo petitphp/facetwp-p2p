@@ -85,7 +85,12 @@ class FWP_P2P {
 			'suppress_filters' => false,
 		) );
 
-		$rows = $this->get_rows_to_index( $connected, $params, true );
+		$hierarchical = false;
+		if ( isset( $facet['hierarchical'] ) && 'yes' === $facet['hierarchical'] ) {
+			$hierarchical = true;
+		}
+
+		$rows = $this->get_rows_to_index( $connected, $params, $hierarchical );
 		if ( empty( $rows ) ) {
 			return true;
 		}
