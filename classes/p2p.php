@@ -55,7 +55,7 @@ class FacetWP_Facet_P2P {
 		$where_clause = apply_filters( 'facetwp_facet_where', $where_clause, $facet );
 
 		// Limit
-		$limit = 10;
+		$limit = apply_filters( 'facetwp_facet_limit', 10);
 
 		$sql = "
         SELECT f.facet_value, f.facet_display_value, COUNT(*) AS counter
