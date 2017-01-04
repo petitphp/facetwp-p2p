@@ -65,7 +65,7 @@ class FacetWP_Facet_P2P {
         ORDER BY $orderby
         LIMIT $limit";
 
-		return $wpdb->get_results( $sql );
+		return $wpdb->get_results( $sql, ARRAY_A );
 	}
 
 	/**
