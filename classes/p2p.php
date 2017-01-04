@@ -65,7 +65,7 @@ class FacetWP_Facet_P2P {
         ORDER BY $orderby
         LIMIT $limit";
 
-		return $wpdb->get_results( $sql );
+		return $wpdb->get_results( $sql, ARRAY_A );
 	}
 
 	/**
@@ -80,10 +80,10 @@ class FacetWP_Facet_P2P {
 		$selected_values = (array) $params['selected_values'];
 
 		foreach ( $values as $result ) {
-			$selected = in_array( $result->facet_value, $selected_values ) ? ' checked' : '';
-			$selected .= ( 0 == $result->counter ) ? ' disabled' : '';
-			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result->facet_value . '">';
-			$output .= $result->facet_display_value . ' <span class="facetwp-counter">(' . $result->counter . ')</span>';
+			$selected = in_array( $result['facet_value'], $selected_values ) ? ' checked' : '';
+			$selected .= ( 0 == $result['counter'] ) ? ' disabled' : '';
+			$output .= '<div class="facetwp-p2p' . $selected . '" data-value="' . $result['facet_value'] . '">';
+			$output .= $result['facet_display_value'] . ' <span class="facetwp-counter">(' . $result['counter'] . ')</span>';
 			$output .= '</div>';
 		}
 
