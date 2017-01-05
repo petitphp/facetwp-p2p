@@ -62,7 +62,7 @@ class FacetWP_Facet_P2P {
 		$orderby      = apply_filters( 'facetwp_facet_orderby', $orderby, $facet );
 
 		// Limit
-		$limit = 10;
+		$limit = ctype_digit( $facet['count'] ) ? $facet['count'] : 20;
 
 		$sql = "
         SELECT f.facet_value, f.facet_display_value, f.parent_id, f.depth, COUNT(*) AS counter
@@ -324,6 +324,16 @@ class FacetWP_Facet_P2P {
 				</select>
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<?php _e( 'Count', 'fwp' ); ?>:
+				<div class="facetwp-tooltip">
+					<span class="icon-question">?</span>
+					<div class="facetwp-tooltip-content"><?php _e( 'The maximum number of facet choices to show', 'fwp' ); ?></div>
+				</div>
+			</td>
+			<td><input type="text" class="facet-count" value="20"/></td>
+		</tr>
 		<?php
 	}
 
@@ -339,6 +349,7 @@ class FacetWP_Facet_P2P {
 					$this.find('.type-p2p .facet-source-p2p').val(obj.source);
 					$this.find('.type-p2p .facet-hierarchical').val(obj.hierarchical);
 					$this.find('.type-p2p .facet-ghosts').val(obj.ghosts);
+					$this.find('.facet-count').val(obj.count);
 
 					//if we have a P2P connexion
 					if (!_.isUndefined(obj.source) && !_.isUndefined(obj.connexion_side)) {
@@ -359,6 +370,7 @@ class FacetWP_Facet_P2P {
 					obj['connexion_side'] = $this.find('.type-p2p .facet-connexion-side').val();
 					obj['hierarchical'] = $this.find('.type-p2p .facet-hierarchical').val();
 					obj['ghosts'] = $this.find('.type-p2p .facet-ghosts').val();
+					obj['count'] = $this.find('.facet-count').val();
 					return obj;
 				});
 
