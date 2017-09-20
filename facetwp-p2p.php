@@ -103,7 +103,8 @@ class FWP_P2P {
 			$from_ptype = get_post_type_object( $connexion->side['from']->first_post_type() );
 			$to_ptype = get_post_type_object( $connexion->side['to']->first_post_type() );
 			foreach ( $connexion->fields as $field_name => $field_options ) {
-				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $field_options['title'] );
+				$field_title = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
+				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $field_title );
 			}
 		}
 
