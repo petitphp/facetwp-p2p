@@ -2,7 +2,7 @@
 
 ## Before updating
 
-This version is not compatible with P2P facets created with previous version of this plugin. You will need to recreate and re-run the indexing process.
+This version is **not compatible** with P2P facets created with previous version of this plugin. You will need to recreate and re-run the indexing process.
 
 ## Description
 
