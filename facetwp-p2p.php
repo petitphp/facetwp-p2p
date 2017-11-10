@@ -67,9 +67,9 @@ class FWP_P2P {
 	 * @return array
 	 */
 	public function p2p_sources( $sources = array() ) {
-		$options = array();
+		$options    = array();
 		$connexions = P2P_Connection_Type_Factory::get_all_instances();
-		foreach( $connexions as $connexion ) {
+		foreach ( $connexions as $connexion ) {
 			$from_ptype = get_post_type_object( $connexion->side['from']->first_post_type() );
 			$to_ptype = get_post_type_object( $connexion->side['to']->first_post_type() );
 			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $from_ptype->labels->singular_name );
@@ -77,9 +77,9 @@ class FWP_P2P {
 		}
 
 		$sources['p2p'] = array(
-			'label' => __( 'Posts 2 Posts', 'facetwp-p2p' ),
+			'label'   => __( 'Posts 2 Posts', 'facetwp-p2p' ),
 			'choices' => $options,
-			'weight' => 40,
+			'weight'  => 40,
 		);
 
 		return $sources;
@@ -93,15 +93,15 @@ class FWP_P2P {
 	 * @return array
 	 */
 	public function p2pmetas_sources( $sources = array() ) {
-		$options = array();
+		$options    = array();
 		$connexions = P2P_Connection_Type_Factory::get_all_instances();
-		foreach( $connexions as $connexion ) {
+		foreach ( $connexions as $connexion ) {
 			if ( empty( $connexion->fields ) ) {
 				continue;
 			}
 
 			$from_ptype = get_post_type_object( $connexion->side['from']->first_post_type() );
-			$to_ptype = get_post_type_object( $connexion->side['to']->first_post_type() );
+			$to_ptype   = get_post_type_object( $connexion->side['to']->first_post_type() );
 			foreach ( $connexion->fields as $field_name => $field_options ) {
 				$field_title = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
 				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $field_title );
@@ -109,9 +109,9 @@ class FWP_P2P {
 		}
 
 		$sources['p2p_meta'] = array(
-			'label' => __( 'Posts 2 Posts Meta', 'facetwp-p2p' ),
+			'label'   => __( 'Posts 2 Posts Meta', 'facetwp-p2p' ),
 			'choices' => $options,
-			'weight' => 50,
+			'weight'  => 50,
 		);
 
 		return $sources;
@@ -133,27 +133,37 @@ class FWP_P2P {
 			return $bypass;
 		}
 
-		$connexion = $source[1];
+		$connexion      = $source[1];
 		$connexion_side = $source[2];
-		$post_ptype = get_post_type( (int) $params['post_id'] );
+		$post_ptype     = get_post_type( (int) $params['post_id'] );
 
 		if ( $post_ptype !== $connexion_side ) {
 			return true;
 		}
 
 		$connected = get_posts( array(
-			'connected_type' => $connexion,
-			'connected_items' => (int) $params['post_id'],
-			'nopaging' => true,
+			'connected_type'   => $connexion,
+			'connected_items'  => (int) $params['post_id'],
+			'nopaging'         => true,
 			'suppress_filters' => false
 		) );
 
 		//Index each connected posts
-		foreach( $connected as $p ) {
+		foreach ( $connected as $p ) {
 			$new_params = wp_parse_args( array(
-				'facet_value' => $p->ID,
+				'facet_value'         => $p->ID,
 				'facet_display_value' => $p->post_title,
 			), $params );
+
+			/**
+			 * Filters values send to the indexer.
+			 *
+			 * @since 2.1.0
+			 *
+			 * @param array $new_params Associative array of parameters.
+			 * @param string $connexion P2P connexion's name.
+			 */
+			$new_params = apply_filters( 'facetp2p_p2p_index_params', $new_params, $connexion );
 			FWP()->indexer->insert( $new_params );
 		}
 
@@ -179,9 +189,9 @@ class FWP_P2P {
 			return $bypass;
 		}
 
-		$connexion = $source[1];
+		$connexion  = $source[1];
 		$field_name = $source[2];
-		$post_id = (int) $params['post_id'];
+		$post_id    = (int) $params['post_id'];
 		$post_ptype = get_post_type( $post_id );
 
 		$connexion_type = P2P_Connection_Type_Factory::get_instance( $connexion );
@@ -207,10 +217,23 @@ class FWP_P2P {
 
 			foreach ( $meta_value as $value ) {
 				$new_params = wp_parse_args( array(
-					'facet_value' => FWP()->helper->safe_value( $value ),
+					'facet_value'         => FWP()->helper->safe_value( $value ),
 					'facet_display_value' => $value,
-					'parent_id' => $p2p_id,
+					'parent_id'           => $p2p_id,
 				), $params );
+
+				/**
+				 * Filters values send to the indexer.
+				 *
+				 * @since 2.1.0
+				 *
+				 * @param array $new_params Associative array of parameters.
+				 * @param int $p2p_id P2P connexion's id.
+				 * @param string $field_name P2P connexion's meta name.
+				 * @param P2P_Connection_Type $connexion_type P2P connexion's object.
+				 * @param string $p2p_column Current P2P connexion side.
+				 */
+				$new_params = apply_filters( 'facetp2p_p2pmeta_index_params', $new_params, (int) $p2p_id, $field_name, $connexion_type, $p2p_column );
 				FWP()->indexer->insert( $new_params );
 			}
 		}
@@ -227,7 +250,7 @@ class FWP_P2P {
 	 */
 	public function p2p_created_connection( $p2p_id ) {
 		$connexion = p2p_get_connection( $p2p_id );
-		$sources = $this->get_facet_source_for_p2p_connection( $connexion );
+		$sources   = $this->get_facet_source_for_p2p_connection( $connexion );
 		if ( is_wp_error( $sources ) ) {
 			return false;
 		}
@@ -257,7 +280,7 @@ class FWP_P2P {
 		foreach ( $p2p_ids as $p2p_id ) {
 
 			$connexion = p2p_get_connection( $p2p_id );
-			$sources = $this->get_facet_source_for_p2p_connection( $connexion );
+			$sources   = $this->get_facet_source_for_p2p_connection( $connexion );
 			if ( is_wp_error( $sources ) ) {
 				continue;
 			}
@@ -286,7 +309,7 @@ class FWP_P2P {
 
 		foreach ( $p2p_ids as $p2p_id ) {
 
-			$connexion = p2p_get_connection( $p2p_id );
+			$connexion      = p2p_get_connection( $p2p_id );
 			$connexion_type = P2P_Connection_Type_Factory::get_instance( $connexion->p2p_type );
 			if ( ! $connexion_type || empty( $connexion_type->fields ) ) {
 				continue;
@@ -326,7 +349,7 @@ class FWP_P2P {
 			);
 		}
 
-		$connexion = ( isset( $p2p_id->p2p_type ) ) ? $p2p_id : p2p_get_connection( $p2p_id );
+		$connexion      = ( isset( $p2p_id->p2p_type ) ) ? $p2p_id : p2p_get_connection( $p2p_id );
 		$connexion_type = P2P_Connection_Type_Factory::get_instance( $connexion->p2p_type );
 		if ( ! $connexion_type ) {
 			return new WP_Error(
@@ -349,7 +372,7 @@ class FWP_P2P {
 				$connexion->p2p_type,
 				$connexion_type->side['from']->first_post_type()
 			),
-			'to' => sprintf(
+			'to'   => sprintf(
 				'p2p/%s/%s',
 				$connexion->p2p_type,
 				$connexion_type->side['to']->first_post_type()
@@ -395,9 +418,11 @@ function FWP_P2P_init() {
 		|| version_compare( FACETWP_VERSION, '2.0.4', '<' )
 	) {
 		add_action( 'admin_notices', 'FWP_P2P_notice' );
+
 		return;
 	}
 
 	FWP_P2P();
 }
+
 add_action( 'plugins_loaded', 'FWP_P2P_init' );
