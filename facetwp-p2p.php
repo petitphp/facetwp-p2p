@@ -146,6 +146,7 @@ class FWP_P2P {
 			'connected_items'  => (int) $params['post_id'],
 			'nopaging'         => true,
 			'suppress_filters' => false
+			'post_type'        => $post_ptype,
 		) );
 
 		//Index each connected posts
