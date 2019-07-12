@@ -22,6 +22,10 @@ This plugin add two new type of sources for your facets, Posts to Posts (P2P) co
 
 ## Changelog
 
+### 2.1.1 (Jul 12, 2019)
+
+* Fix Fatal error when a P2P connection between a post type and a user is created
+
 ### 2.1.0 (Nov 10, 2017)
 
 * New filter `facetp2p_p2p_index_params` : Change the data generated for a post when indexing a P2P connexion

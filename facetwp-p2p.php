@@ -3,7 +3,7 @@
 Plugin Name: FacetWP - Posts 2 Posts
 Plugin URI:  https://github.com/petitphp/facetwp-p2p
 Description: Add a P2P connexion facet for the plugin FacetWP
-Version:     2.0.0
+Version:     2.1.1
 Author:      Clément Boirie
 Author URI:  https://github.com/petitphp
 License:     GPL2+
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-define( 'FWP_P2P_VER', '2.0.0' );
+define( 'FWP_P2P_VER', '2.1.1' );
 define( 'FWP_P2P_URL', plugin_dir_url( __FILE__ ) );
 define( 'FWP_P2P_DIR', plugin_dir_path( __FILE__ ) );
 
