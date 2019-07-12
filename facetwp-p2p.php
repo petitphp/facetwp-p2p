@@ -70,10 +70,15 @@ class FWP_P2P {
 		$options    = array();
 		$connexions = P2P_Connection_Type_Factory::get_all_instances();
 		foreach ( $connexions as $connexion ) {
-			$from_ptype = get_post_type_object( $connexion->side['from']->first_post_type() );
-			$to_ptype = get_post_type_object( $connexion->side['to']->first_post_type() );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $from_ptype->labels->singular_name );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $to_ptype->labels->singular_name );
+			$from_ptype = $this->parse_side( $connexion->side['from'] );
+			$to_ptype = $this->parse_side( $connexion->side['to'] );
+			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $from_ptype->singular_name );
+			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $to_ptype->singular_name );
+		}
+
+		// don't add source if no options available
+		if ( empty( $options ) ) {
+			return $sources;
 		}
 
 		$sources['p2p'] = array(
@@ -100,12 +105,17 @@ class FWP_P2P {
 				continue;
 			}
 
-			$from_ptype = get_post_type_object( $connexion->side['from']->first_post_type() );
-			$to_ptype   = get_post_type_object( $connexion->side['to']->first_post_type() );
+			$from_ptype = $this->parse_side( $connexion->side['from'] );
+			$to_ptype   = $this->parse_side( $connexion->side['to'] );
 			foreach ( $connexion->fields as $field_name => $field_options ) {
 				$field_title = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
-				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s &rarr; %s] %s", $from_ptype->labels->singular_name, $to_ptype->labels->singular_name, $field_title );
+				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $field_title );
 			}
+		}
+
+		// don't add source if no options available
+		if ( empty( $options ) ) {
+			return $sources;
 		}
 
 		$sources['p2p_meta'] = array(
@@ -199,7 +209,7 @@ class FWP_P2P {
 			return true;
 		}
 
-		$p2p_column = $connexion_type->side['from']->first_post_type() === $post_ptype ? 'p2p_from' : 'p2p_to';
+		$p2p_column = $this->get_post_type( $connexion_type->side['from'] ) === $post_ptype ? 'p2p_from' : 'p2p_to';
 
 		$p2p_ids = $wpdb->get_col(
 			$wpdb->prepare(
@@ -362,7 +372,7 @@ class FWP_P2P {
 			return sprintf(
 				'p2p/%s/%s',
 				$connexion->p2p_type,
-				$connexion_type->side[ $direction ]->first_post_type()
+				$this->get_post_type( $connexion_type->side[ $direction ] )
 			);
 		}
 
@@ -370,14 +380,51 @@ class FWP_P2P {
 			'from' => sprintf(
 				'p2p/%s/%s',
 				$connexion->p2p_type,
-				$connexion_type->side['from']->first_post_type()
+				$this->get_post_type( $connexion_type->side['from'] )
 			),
 			'to'   => sprintf(
 				'p2p/%s/%s',
 				$connexion->p2p_type,
-				$connexion_type->side['to']->first_post_type()
+				$this->get_post_type( $connexion_type->side['to'] )
 			)
 		);
+	}
+
+	/**
+	 * Get post type for a P2P_Side.
+	 *
+	 * Handle special case for P2P_Side_User.
+	 *
+	 * @param P2P_Side $side
+	 *
+	 * @return string
+	 */
+	protected function get_post_type( $side ) {
+		return ( is_a( $side, 'P2P_Side_User' ) ) ? 'user' : $side->first_post_type();
+	}
+
+	/**
+	 * Prepare data for a P2P_Side.
+	 *
+	 * @param P2P_Side $side
+	 *
+	 * @return object
+	 */
+	protected function parse_side( $side ) {
+		$data = [];
+
+		$type = $this->get_post_type( $side );
+
+		if ( 'user' === $type ) {
+			$data['name'] = 'user';
+			$data['singular_name'] = 'User';
+		} else {
+			$ptype = get_post_type_object( $type );
+			$data['name'] = $ptype->name;
+			$data['singular_name'] = $ptype->labels->singular_name;
+		}
+
+		return (object) $data;
 	}
 }
 
