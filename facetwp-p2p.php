@@ -70,10 +70,23 @@ class FWP_P2P {
 		$options    = array();
 		$connexions = P2P_Connection_Type_Factory::get_all_instances();
 		foreach ( $connexions as $connexion ) {
-			$from_ptype = $this->parse_side( $connexion->side['from'] );
-			$to_ptype = $this->parse_side( $connexion->side['to'] );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $from_ptype->singular_name );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $to_ptype->singular_name );
+			$from_labels = $connexion->labels['from'];
+			$to_labels   = $connexion->labels['to'];
+			$from_ptype  = $this->parse_side( $connexion->side['from'] );
+			$to_ptype    = $this->parse_side( $connexion->side['to'] );
+
+			if ( $from_ptype->singular_name !== $from_labels['singular_name'] && $to_ptype->singular_name !== $to_labels['singular_name'] ) {
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( '[%s (%s) → %s (%s)] %s', $from_ptype->singular_name, $from_labels['singular_name'], $to_ptype->singular_name, $to_labels['singular_name'], $from_ptype->singular_name );
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ]   = sprintf( '[%s (%s) → %s (%s)] %s', $from_ptype->singular_name, $from_labels['singular_name'], $to_ptype->singular_name, $to_labels['singular_name'], $to_ptype->singular_name );
+			} elseif ( $from_ptype->singular_name !== $from_labels['singular_name'] && $to_ptype->singular_name === $to_labels['singular_name'] ) {
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( '[%s (%s) → %s] %s', $from_ptype->singular_name, $from_labels['singular_name'], $to_ptype->singular_name, $from_ptype->singular_name );
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ]   = sprintf( '[%s (%s) → %s] %s', $from_ptype->singular_name, $from_labels['singular_name'], $to_ptype->singular_name, $to_ptype->singular_name );
+			} elseif ( $from_ptype->singular_name === $from_labels['singular_name'] && $to_ptype->singular_name !== $to_labels['singular_name'] ) {
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( '[%s → %s (%s)] %s', $from_ptype->singular_name, $to_ptype->singular_name, $to_labels['singular_name'], $from_ptype->singular_name );
+				$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ]   = sprintf( '[%s → %s (%s)] %s', $from_ptype->singular_name, $to_ptype->singular_name, $to_labels['singular_name'], $to_ptype->singular_name );
+			} else {
+				continue;
+			}
 		}
 
 		// don't add source if no options available
@@ -108,7 +121,7 @@ class FWP_P2P {
 			$from_ptype = $this->parse_side( $connexion->side['from'] );
 			$to_ptype   = $this->parse_side( $connexion->side['to'] );
 			foreach ( $connexion->fields as $field_name => $field_options ) {
-				$field_title = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
+				$field_title                                                          = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
 				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $field_title );
 			}
 		}
@@ -416,11 +429,11 @@ class FWP_P2P {
 		$type = $this->get_post_type( $side );
 
 		if ( 'user' === $type ) {
-			$data['name'] = 'user';
+			$data['name']          = 'user';
 			$data['singular_name'] = 'User';
 		} else {
-			$ptype = get_post_type_object( $type );
-			$data['name'] = $ptype->name;
+			$ptype                 = get_post_type_object( $type );
+			$data['name']          = $ptype->name;
 			$data['singular_name'] = $ptype->labels->singular_name;
 		}
 
