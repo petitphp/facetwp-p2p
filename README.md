@@ -22,6 +22,10 @@ This plugin add two new type of sources for your facets, Posts to Posts (P2P) co
 
 ## Changelog
 
+### 2.1.2 (Feb 13, 2020)
+
+* Fix indexing issue for facets with P2P / P2P meta source when variations support is enable (resync needed)
+
 ### 2.1.1 (Jul 12, 2019)
 
 * Fix Fatal error when a P2P connection between a post type and a user is created
