@@ -174,7 +174,7 @@ class FWP_P2P {
 			 * @param string $connexion P2P connexion's name.
 			 */
 			$new_params = apply_filters( 'facetp2p_p2p_index_params', $new_params, $connexion );
-			FWP()->indexer->insert( $new_params );
+			FWP()->indexer->index_row( $new_params );
 		}
 
 		return true;
@@ -244,7 +244,7 @@ class FWP_P2P {
 				 * @param string $p2p_column Current P2P connexion side.
 				 */
 				$new_params = apply_filters( 'facetp2p_p2pmeta_index_params', $new_params, (int) $p2p_id, $field_name, $connexion_type, $p2p_column );
-				FWP()->indexer->insert( $new_params );
+				FWP()->indexer->index_row( $new_params );
 			}
 		}
 
