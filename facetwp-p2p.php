@@ -426,6 +426,26 @@ class FWP_P2P {
 
 		return (object) $data;
 	}
+
+	/**
+	 * Get available P2P connexion.
+	 *
+	 * @return \P2P_Connection_Type[]
+	 */
+	protected function get_connexions() {
+
+		$connexions = P2P_Connection_Type_Factory::get_all_instances();
+
+		/**
+		 * Filters available P2P connexions.
+		 *
+		 * @param \P2P_Connection_Type[] $connexions List of P2P connexion.
+		 *
+		 * @since 3.0.0
+		 *
+		 */
+		return apply_filters( 'facetp2p_p2p_connexions', $connexions );
+	}
 }
 
 /**
