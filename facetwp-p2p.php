@@ -592,7 +592,7 @@ function FWP_P2P() {
  * Print warning notice if requirements are not met.
  */
 function FWP_P2P_notice() {
-	$message = __( 'FWP P2P requires FacetWP 2.0.4 or above to work.', 'facetwp-p2p' );
+	$message = __( 'FWP P2P requires FacetWP 3.3.2 or above to work.', 'facetwp-p2p' );
 	if ( ! defined( 'FACETWP_VERSION' ) ) {
 		$message .= ' ';
 		$message .= __( 'FacetWP doesn\'t seem to be install on your site.', 'facetwp-p2p' );
@@ -613,7 +613,7 @@ function FWP_P2P_init() {
 	// Check
 	if (
 		! defined( 'FACETWP_VERSION' )
-		|| version_compare( FACETWP_VERSION, '2.0.4', '<' )
+		|| version_compare( FACETWP_VERSION, '3.3.2', '<' )
 	) {
 		add_action( 'admin_notices', 'FWP_P2P_notice' );
 
