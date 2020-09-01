@@ -360,19 +360,17 @@ class FWP_P2P {
 	 * @return bool
 	 */
 	public function p2p_created_connection( $p2p_id ) {
-		$connexion = p2p_get_connection( $p2p_id );
-		$sources   = $this->get_facet_source_for_p2p_connection( $connexion );
-		if ( is_wp_error( $sources ) ) {
-			return false;
-		}
 
-		foreach ( FWP()->helper->get_facets() as $facet ) {
-			if ( $sources['from'] === $facet['source'] ) {
+		$connexion     = p2p_get_connection( $p2p_id );
+		$facets_groups = $this->get_facets_name_for_p2p_connection( $connexion );
+
+		foreach ( $facets_groups as $direction => $facets ) {
+			if ( 'from' === $direction && count( $facets ) > 0 ) {
 				FWP()->indexer->index( $connexion->p2p_from );
 			}
 
-			if ( $sources['to'] === $facet['source'] ) {
-				FWP()->indexer->index( $connexion->p2p_to );
+			if ( 'to' === $direction && count( $facets ) > 0 ) {
+				FWP()->indexer->index( $connexion->p2p_from );
 			}
 		}
 
@@ -390,25 +388,35 @@ class FWP_P2P {
 
 		foreach ( $p2p_ids as $p2p_id ) {
 
-			$connexion = p2p_get_connection( $p2p_id );
-			$sources   = $this->get_facet_source_for_p2p_connection( $connexion );
-			if ( is_wp_error( $sources ) ) {
+			$connexion            = p2p_get_connection( $p2p_id );
+			$facets_by_directions = $this->get_facets_name_for_p2p_connection( $connexion );
+			if ( is_wp_error( $facets_by_directions ) || empty( $facets_by_directions ) ) {
 				continue;
 			}
 
-			foreach ( $sources as $source ) {
+			foreach ( $facets_by_directions as $direction => $facets ) {
+
+				$names = wp_list_pluck( $facets, 'name' );
+				$names = array_filter( array_map( 'esc_sql', $names ) );
+				if ( empty( $names ) ) {
+					continue;
+				}
+
+				$facet_name_in = "'";
+				$facet_name_in .= implode( "', '", $names );
+				$facet_name_in .= "'";
+
 				$wpdb->query( $wpdb->prepare(
 					"
-				DELETE FROM {$wpdb->prefix}facetwp_index
-				WHERE post_id IN (%d, %d)
-				AND facet_value IN (%d, %d)
-				AND facet_source = %s
-				",
+					DELETE FROM {$wpdb->prefix}facetwp_index
+					WHERE post_id IN (%d, %d)
+					AND facet_value IN (%d, %d)
+					AND facet_name IN ($facet_name_in)
+					",
 					$connexion->p2p_from,
 					$connexion->p2p_to,
 					$connexion->p2p_from,
-					$connexion->p2p_to,
-					$source
+					$connexion->p2p_to
 				) );
 			}
 		}
@@ -430,16 +438,29 @@ class FWP_P2P {
 
 				$source = sprintf( 'p2pmeta/%s/%s', $connexion->p2p_type, $field_name );
 
+				$facets = FWP()->helper->get_facets_by(
+					'source',
+					$source
+				);
+				$names  = wp_list_pluck( $facets, 'name' );
+				$names  = array_filter( array_map( 'esc_sql', $names ) );
+				if ( empty( $names ) ) {
+					continue;
+				}
+
+				$facet_name_in = "'";
+				$facet_name_in .= implode( "', '", $names );
+				$facet_name_in .= "'";
+
 				$wpdb->query( $wpdb->prepare(
 					"
-				DELETE FROM {$wpdb->prefix}facetwp_index
-				WHERE post_id IN (%d, %d)
-				AND facet_source = %s
-				AND parent_id = %d
-				",
+					DELETE FROM {$wpdb->prefix}facetwp_index
+					WHERE post_id IN (%d, %d)
+					AND facet_name IN ($facet_name_in)
+					AND parent_id = %d
+					",
 					$connexion->p2p_from,
 					$connexion->p2p_to,
-					$source,
 					$p2p_id
 				) );
 			}
@@ -447,13 +468,13 @@ class FWP_P2P {
 	}
 
 	/**
-	 * @param int|object $p2p_id
-	 * @param bool $direction
+	 * @param int|object $p2p_id $p2p_id
+	 * @param string $direction
 	 *
-	 * @return array|string|WP_Error
+	 * @return array|WP_Error
 	 */
-	protected function get_facet_source_for_p2p_connection( $p2p_id, $direction = false ) {
-		if ( false !== $direction && ! in_array( $direction, array( 'from', 'to' ) ) ) {
+	protected function get_facets_name_for_p2p_connection( $p2p_id, $direction = '' ) {
+		if ( '' !== $direction && ! in_array( $direction, [ 'from', 'to' ] ) ) {
 			return new WP_Error(
 				'facetwp_p2p_invalid_p2p_direction',
 				sprintf( 'The direction %s is invalid. Allowed directions are "from" and "to".', $direction )
@@ -469,26 +490,35 @@ class FWP_P2P {
 			);
 		}
 
-		if ( false !== $direction ) {
-			return sprintf(
-				'p2p/%s/%s',
-				$connexion->p2p_type,
-				$this->get_post_type( $connexion_type->side[ $direction ] )
+		if ( '' !== $direction ) {
+			return FWP()->helper->get_facets_by(
+				'source',
+				sprintf(
+					'p2p/%s/%s',
+					$connexion->p2p_type,
+					$this->get_post_type( $connexion_type->side[ $direction ] )
+				)
 			);
 		}
 
-		return array(
-			'from' => sprintf(
-				'p2p/%s/%s',
-				$connexion->p2p_type,
-				$this->get_post_type( $connexion_type->side['from'] )
+		return [
+			'from' => FWP()->helper->get_facets_by(
+				'source',
+				sprintf(
+					'p2p/%s/%s',
+					$connexion->p2p_type,
+					$this->get_post_type( $connexion_type->side['from'] )
+				)
 			),
-			'to'   => sprintf(
-				'p2p/%s/%s',
-				$connexion->p2p_type,
-				$this->get_post_type( $connexion_type->side['to'] )
-			)
-		);
+			'to'   => FWP()->helper->get_facets_by(
+				'source',
+				sprintf(
+					'p2p/%s/%s',
+					$connexion->p2p_type,
+					$this->get_post_type( $connexion_type->side['to'] )
+				)
+			),
+		];
 	}
 
 	/**
