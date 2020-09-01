@@ -67,13 +67,73 @@ class FWP_P2P {
 	 * @return array
 	 */
 	public function p2p_sources( $sources = array() ) {
-		$options    = array();
-		$connexions = P2P_Connection_Type_Factory::get_all_instances();
+
+		$options = array();
+		$connexions = $this->get_connexions();
 		foreach ( $connexions as $connexion ) {
+
 			$from_ptype = $this->parse_side( $connexion->side['from'] );
-			$to_ptype = $this->parse_side( $connexion->side['to'] );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $from_ptype->singular_name );
-			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $to_ptype->singular_name );
+			$to_ptype   = $this->parse_side( $connexion->side['to'] );
+
+			$from_title = ! empty( $connexion->labels['from']['singular_name'] )
+				? esc_html( $connexion->labels['from']['singular_name'] )
+				: esc_html( $from_ptype->singular_name );
+			$to_title   = ! empty( $connexion->labels['to']['singular_name'] )
+				? esc_html( $connexion->labels['to']['singular_name'] )
+				: esc_html( $to_ptype->singular_name );
+
+			$from_source_name = sprintf( '[%s → %s] %s', $from_title, $to_title, $from_title );
+
+			/**
+			 * Filters the source name for connexion's 'from' side.
+			 *
+			 * @param string $from_source_name Current source name.
+			 * @param \P2P_Connection_Type $connexion Connexion object.
+			 * @param string $from_title Title of the 'from' side
+			 * @param object $from_ptype {
+			 *
+			 *      @type string $name Post type's name for 'from' side.
+			 *      @type string $singular_name Post type's singular name for 'from' side.
+			 * }
+			 * @param string $to_title Title of the 'to' side
+			 * @param object $to_ptype {
+			 *
+			 *      @type string $name Post type's name for 'to' side.
+			 *      @type string $singular_name Post type's singular name for 'to' side.
+			 * }
+			 *
+			 * @since 3.0.0
+			 *
+			 */
+			$from_source_name = apply_filters( 'facetp2p_p2p_source_name_from', $from_source_name, $connexion, $from_title, $from_ptype, $to_title, $to_ptype );
+
+			$to_source_name = sprintf( '[%s → %s] %s', $from_title, $to_title, $to_title );
+
+			/**
+			 * Filters the source name for connexion's 'to' side.
+			 *
+			 * @param string $to_source_name Current source name.
+			 * @param \P2P_Connection_Type $connexion Connexion object.
+			 * @param string $from_title Title of the 'from' side
+			 * @param object $from_ptype {
+			 *
+			 *      @type string $name Post type's name for 'from' side.
+			 *      @type string $singular_name Post type's singular name for 'from' side.
+			 * }
+			 * @param string $to_title Title of the 'to' side
+			 * @param object $to_ptype {
+			 *
+			 *      @type string $name Post type's name for 'to' side.
+			 *      @type string $singular_name Post type's singular name for 'to' side.
+			 * }
+			 *
+			 * @since 3.0.0
+			 *
+			 */
+			$to_source_name = apply_filters( 'facetp2p_p2p_source_name_to', $to_source_name, $connexion, $from_title, $from_ptype, $to_title, $to_ptype );
+
+			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $from_ptype->name ) ] = $from_source_name;
+			$options[ sprintf( 'p2p/%s/%s', $connexion->name, $to_ptype->name ) ]   = $to_source_name;
 		}
 
 		// don't add source if no options available
@@ -98,8 +158,9 @@ class FWP_P2P {
 	 * @return array
 	 */
 	public function p2pmetas_sources( $sources = array() ) {
-		$options    = array();
-		$connexions = P2P_Connection_Type_Factory::get_all_instances();
+
+		$options = array();
+		$connexions = $this->get_connexions();
 		foreach ( $connexions as $connexion ) {
 			if ( empty( $connexion->fields ) ) {
 				continue;
@@ -107,9 +168,47 @@ class FWP_P2P {
 
 			$from_ptype = $this->parse_side( $connexion->side['from'] );
 			$to_ptype   = $this->parse_side( $connexion->side['to'] );
+
+			$from_title = ! empty( $connexion->labels['from']['singular_name'] )
+				? esc_html( $connexion->labels['from']['singular_name'] )
+				: esc_html( $from_ptype->singular_name );
+			$to_title   = ! empty( $connexion->labels['to']['singular_name'] )
+				? esc_html( $connexion->labels['to']['singular_name'] )
+				: esc_html( $to_ptype->singular_name );
+
 			foreach ( $connexion->fields as $field_name => $field_options ) {
 				$field_title = ! empty( $field_options['title'] ) ? $field_options['title'] : $field_name;
-				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = sprintf( "[%s → %s] %s", $from_ptype->singular_name, $to_ptype->singular_name, $field_title );
+
+				$field_source_name = sprintf( '[%s → %s] %s', $from_title, $to_title, $field_title );
+
+				/**
+				 * Filters the source name for a field
+				 *
+				 * @param string $field_source_name Current source name.
+				 * @param \P2P_Connection_Type $connexion Connexion object.
+				 * @param string $field_title Field's title.
+				 * @param string $field_name Field's name.
+				 * @param array $field_options Field's options.
+				 * @param string $from_title Title of the 'from' side.
+				 * @param object $from_ptype {
+				 *
+				 *      @type string $name Post type's name for 'from' side.
+				 *      @type string $singular_name Post type's singular name for 'from' side.
+				 * }
+				 *
+				 * @param string $to_title Title of the 'to' side.
+				 * @param object $to_ptype {
+				 *
+				 *      @type string $name Post type's name for 'to' side.
+				 *      @type string $singular_name Post type's singular name for 'to' side.
+				 * }
+				 *
+				 * @since 3.0.0
+				 *
+				 */
+				$field_source_name = apply_filters( 'facetp2p_p2pmeta_source_name', $field_source_name, $connexion, $field_title, $field_name, $field_options, $from_title, $from_ptype, $to_title, $to_ptype );
+
+				$options[ sprintf( 'p2pmeta/%s/%s', $connexion->name, $field_name ) ] = $field_source_name;
 			}
 		}
 
@@ -168,10 +267,11 @@ class FWP_P2P {
 			/**
 			 * Filters values send to the indexer.
 			 *
-			 * @since 2.1.0
-			 *
 			 * @param array $new_params Associative array of parameters.
 			 * @param string $connexion P2P connexion's name.
+			 *
+			 * @since 2.1.0
+			 *
 			 */
 			$new_params = apply_filters( 'facetp2p_p2p_index_params', $new_params, $connexion );
 			FWP()->indexer->index_row( $new_params );
@@ -235,13 +335,14 @@ class FWP_P2P {
 				/**
 				 * Filters values send to the indexer.
 				 *
-				 * @since 2.1.0
-				 *
 				 * @param array $new_params Associative array of parameters.
 				 * @param int $p2p_id P2P connexion's id.
 				 * @param string $field_name P2P connexion's meta name.
 				 * @param P2P_Connection_Type $connexion_type P2P connexion's object.
 				 * @param string $p2p_column Current P2P connexion side.
+				 *
+				 * @since 2.1.0
+				 *
 				 */
 				$new_params = apply_filters( 'facetp2p_p2pmeta_index_params', $new_params, (int) $p2p_id, $field_name, $connexion_type, $p2p_column );
 				FWP()->indexer->index_row( $new_params );
