@@ -22,6 +22,14 @@ This plugin add two new type of sources for your facets, Posts to Posts (P2P) co
 
 ## Changelog
 
+### 3.0.0 (Sep 1, 2020)
+
+* New filter `facetp2p_p2p_connexions` : Change available connexions for FacetWP P2P
+* New filter `facetp2p_p2p_source_name_from` / `facetp2p_p2p_source_name_to` : Change P2P facets's name
+* New filter `facetp2p_p2pmeta_source_name` : Change P2P metas facets's name
+* Remove use of deprecated column 'facet_source' in sql queries
+* Bump minimum version to FacetWP to 3.3.2
+
 ### 2.1.2 (Feb 13, 2020)
 
 * Fix indexing issue for facets with P2P / P2P meta source when variations support is enable (resync needed)
