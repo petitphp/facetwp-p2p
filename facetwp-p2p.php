@@ -366,11 +366,11 @@ class FWP_P2P {
 
 		foreach ( $facets_groups as $direction => $facets ) {
 			if ( 'from' === $direction && count( $facets ) > 0 ) {
-				FWP()->indexer->index( $connexion->p2p_from );
+				FWP()->indexer->index( (int) $connexion->p2p_from );
 			}
 
 			if ( 'to' === $direction && count( $facets ) > 0 ) {
-				FWP()->indexer->index( $connexion->p2p_to );
+				FWP()->indexer->index( (int) $connexion->p2p_to );
 			}
 		}
 
