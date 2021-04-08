@@ -370,7 +370,7 @@ class FWP_P2P {
 			}
 
 			if ( 'to' === $direction && count( $facets ) > 0 ) {
-				FWP()->indexer->index( $connexion->p2p_from );
+				FWP()->indexer->index( $connexion->p2p_to );
 			}
 		}
 
