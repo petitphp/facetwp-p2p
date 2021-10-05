@@ -22,6 +22,15 @@ This plugin add two new type of sources for your facets, Posts to Posts (P2P) co
 
 ## Changelog
 
+### 3.0.2 (Oct 5, 2021)
+
+* Fix missing P2P connexion when rebuilding index from FacetWP settings page.
+
+### 3.0.1 (Apr 8, 2021)
+
+* Fix wrong site ID use when indexing connection
+* Fix FacetWP Indexer index method expect integer
+
 ### 3.0.0 (Sep 1, 2020)
 
 * New filter `facetp2p_p2p_connexions` : Change available connexions for FacetWP P2P
