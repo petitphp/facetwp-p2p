@@ -242,6 +242,11 @@ class FWP_P2P {
 			return $bypass;
 		}
 
+		// Ensure P2P init hook was invoked.
+		if ( ! did_action( 'p2p_init' ) ) {
+			do_action( 'p2p_init' );
+		}
+
 		$connexion      = $source[1];
 		$connexion_side = $source[2];
 		$post_ptype     = get_post_type( (int) $params['post_id'] );
@@ -297,6 +302,11 @@ class FWP_P2P {
 		$source = explode( '/', $params['facet_source'] );
 		if ( count( $source ) !== 3 || 'p2pmeta' !== $source[0] ) {
 			return $bypass;
+		}
+
+		// Ensure P2P init hook was invoked.
+		if ( ! did_action( 'p2p_init' ) ) {
+			do_action( 'p2p_init' );
 		}
 
 		$connexion  = $source[1];
